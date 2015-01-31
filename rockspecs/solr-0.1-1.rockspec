@@ -1,7 +1,8 @@
 package = "solr"
 version = "0.1-1"
 source = {
-   url = "https://github.com/alekmarinov/luasolr/archive/0.1.zip"
+   url = "https://github.com/alekmarinov/luasolr/archive/0.1.zip",
+   dir = "luasolr-0.1"
 }
 description = {
    summary = "Lua to Apache Solr connection module",

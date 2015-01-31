@@ -65,25 +65,32 @@ local function solrrequest(self, command, query, data)
 end
 
 -- query data
-function query(self, queryoptions)
+function query(self, query)
     -- request json response
-    local queryparams = { "wt=json" }
+    local params = { "wt=json" }
 
     -- format query params
-    for name, value in pairs(queryoptions) do
-        if type(value) == "table" then
-            -- multiple query parameters
-            for _, v in ipairs(value) do
-                table.insert(queryparams, name.."="..url.escape(v))
+    if type(query) == "table" then
+        for name, value in pairs(query) do
+            if type(value) == "table" then
+                -- multiple query parameters
+                for _, v in ipairs(value) do
+                    table.insert(params, name.."="..url.escape(v))
+                end
+            else
+                value = tostring(value)
+                table.insert(params, name.."="..url.escape(value))
             end
-        else
-            value = tostring(value)
-            table.insert(queryparams, name.."="..url.escape(value))
         end
+    elseif type(query) == "string" then
+        table.insert(params, "q="..url.escape(query))
+    else
+        assert(type(query) == "nil", "unexpected query type "..type(query))
+        table.insert(params, "q=*")
     end
 
     -- perform query request
-    return solrrequest(self, "/select", table.concat(queryparams, "&"))
+    return solrrequest(self, "/select", table.concat(params, "&"))
 end
 
 -- post data
@@ -91,8 +98,17 @@ function post(self, data)
     -- request json response and auto commit
     local queryparams = { "wt=json", "commit=true" }
 
+    if #data == 0 then
+        data = {data}
+    end
+
     -- perform query request
     return solrrequest(self, "/update", table.concat(queryparams, "&"), data)
+end
+
+-- delete by id
+function delete(self, id)
+    return solrrequest(self, "/update", "stream.body="..url.escape(string.format("<delete><query>id:%s</query></delete>", tostring(id))).."&wt=json&commit=true")
 end
 
 -- creates new object to bind solr
