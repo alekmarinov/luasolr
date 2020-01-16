@@ -2,7 +2,6 @@
 --                                                                   --
 -- Filename:    solr.lua                                             --
 -- Description: Lua to Apache Solr connection module                 --
--- Copyright (c) 2015 Alexander Marinov <alekmarinov@gmail.com>      --
 --                                                                   --
 -----------------------------------------------------------------------
 
@@ -11,14 +10,10 @@ local url    = require "socket.url"
 local json   = require "json"
 local ltn12  = require "ltn12"
 
-local type, assert, setmetatable, pairs, tostring, table, string =
-      type, assert, setmetatable, pairs, tostring, table, string
-
-module (...)
-
-_VERSION = "0.1"
-_DESCRIPTION = "Lua to Apache Solr connection module"
-_COPYRIGHT = "Copyright (c) 2015 Alexander Marinov <alekmarinov@gmail.com>"
+local _M = {
+    _VERSION = "0.2.1",
+    _DESCRIPTION = "Lua to Apache Solr connection module"
+}
 
 local function createurl(self, command, query)
     return url.build{
@@ -30,7 +25,7 @@ local function createurl(self, command, query)
     }
 end
 
-local function solrrequest(self, command, query, data)
+function _M:request(command, query, data)
     local result = {}
 
     -- creates http request object
@@ -38,7 +33,7 @@ local function solrrequest(self, command, query, data)
         url     = createurl(self, command, query),
         sink    = ltn12.sink.table(result),
         headers = {
-            ["Connection"] = 'close',
+            ["Connection"] = "close"
         }
     }
 
@@ -65,7 +60,7 @@ local function solrrequest(self, command, query, data)
 end
 
 -- query data
-function query(self, query)
+function _M:query(query)
     -- request json response
     local params = { "wt=json" }
 
@@ -90,11 +85,11 @@ function query(self, query)
     end
 
     -- perform query request
-    return solrrequest(self, "/select", table.concat(params, "&"))
+    return self:request("/select", table.concat(params, "&"))
 end
 
 -- post data
-function post(self, data)
+function _M:post(data)
     -- request json response and auto commit
     local queryparams = { "wt=json", "commit=true" }
 
@@ -103,16 +98,16 @@ function post(self, data)
     end
 
     -- perform query request
-    return solrrequest(self, "/update", table.concat(queryparams, "&"), data)
+    return self:request("/update", table.concat(queryparams, "&"), data)
 end
 
 -- delete by id
-function delete(self, id)
-    return solrrequest(self, "/update", "stream.body="..url.escape(string.format("<delete><query>id:%s</query></delete>", tostring(id))).."&wt=json&commit=true")
+function _M:delete(id)
+    return self:post(json.encode{ delete = { id = id }})
 end
 
 -- creates new object to bind solr
-function new(options)
+function _M.new(options)
     if type(options) == "string" then
         options = {collection = options}
     else

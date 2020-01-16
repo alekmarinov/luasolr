@@ -1,8 +1,8 @@
 package = "solr"
-version = "0.2-1"
+version = "0.2.1-0"
 source = {
-   url = "https://github.com/alekmarinov/luasolr/archive/0.2.zip",
-   dir = "luasolr-0.2"
+   url = "git+https://github.com/alekmarinov/luasolr.git",
+   tag = "0.2.1"
 }
 description = {
    summary = "Lua to Apache Solr connection module",
@@ -13,13 +13,12 @@ Provides minimalistic interface to solr enabling posting and quering data record
    license = "MIT/X11"
 }
 dependencies = {
-   "lua ~> 5.1",
    "luajson",
    "luasocket"
 }
 build = {
    type = "builtin",
    modules = {
-      solr = "lua/solr.lua"
+      solr = "solr.lua"
    }
 }

@@ -1,6 +1,6 @@
-require "solr"
+solr = require "solr"
 
-slr = solr.new("collection1")
+slr = solr.new("gettingstarted")
 
 data = {}
 for i = 1, 5 do
@@ -20,7 +20,7 @@ end
 slr:post{{id = 9, title = "find me"}}
 
 -- find it
-result = slr:query("find")
+result = slr:query{ q = "title:find" }
 assert(result.response.numFound == 1)
 
 -- delete it
